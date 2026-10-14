@@ -1,0 +1,46 @@
+# Bug: stack overflow / bypassing canary
+
+There is actually no limit on the size of the input.
+The problem is: there is a canary.
+
+Notice that:
+"the address of output buffer" - "the address of vuln canary"
+is always equal to
+"the address of input buffer" - "the address of main canary"
+
+We can copy the "main canary" to the position of "vuln canary".
+
+Then we can get control of EIP.
+Notice that there is no "pop|pop|pop|ret" gadget in the binary.
+So we cannot use functions like "memset".
+
+We can use "num_toupper" and "lower_toupper" to spell "flag".
+
+"num_toupper" is +17
+"lower_toupper" is -32
+
+For example, if we want to spell "f", it is identical to solve this problem:
+
+17x - 32y = ascii("f") + 256z
+x > 0, y > 0
+When x+y is the minimum, what is the value of x, y and z?
+
+(Note: we have to make x+y to be the minimum, because the length of ROP chain is limited.
+Otherwise, the "main canary" would be overwritten.)
+
+Use AI to solve this problem. We will get:
+"f": x = 6, y = 8, z = -1
+"l": x = 12, y = 3, z = 0
+"a": x = 17, y = 6, z = 0
+"g": x = 23, y = 1, z = 1
+
+To fully solve this problem, you may need to try several times.
+If the canary contains "\x30 to \x39" (0~9) or "\x61 to \x7a" (a~z), it will fail.
+Because the possibility of success is actually very high, you will probably get the flag within 10 attempts.
+
+# Exploit
+
+1) Make stack overflow.
+2) Copy the "main canary" to the "vuln canary".
+3) Use "num_toupper" and "lower_toupper" to spell "flag".
+4) Try several times to get the flag.
